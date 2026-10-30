@@ -4,6 +4,10 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
+/**
+ * Requires a valid environment (`.env` with DATABASE_URL, JWT_SECRET,
+ * FRONTEND_URLS) because the full AppModule is bootstrapped.
+ */
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
@@ -13,14 +17,21 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/api/health (GET) is public', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/api/health')
       .expect(200)
-      .expect('Hello World!');
+      .expect((res) => {
+        expect((res.body as { status: string }).status).toBe('ok');
+      });
+  });
+
+  it('/api/tenants/me (GET) requires a Bearer token', () => {
+    return request(app.getHttpServer()).get('/api/tenants/me').expect(401);
   });
 
   afterEach(async () => {
