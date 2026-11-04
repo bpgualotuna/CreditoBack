@@ -19,9 +19,31 @@ async function bootstrap(): Promise<void> {
 
   // --- Security / transport ---
   app.use(cookieParser());
+  const allowedOrigins = parseOrigins(
+    config.get('FRONTEND_URLS', { infer: true }),
+  );
   app.enableCors({
-    // CreditoWeb (Vite) + CreditoMovil (Capacitor WebView)
-    origin: parseOrigins(config.get('FRONTEND_URLS', { infer: true })),
+    origin: (
+      requestOrigin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // Permitir peticiones sin origin (móviles directos, curl, postman)
+      if (!requestOrigin) return callback(null, true);
+      // Permitir cualquier localhost / 127.0.0.1 con cualquier puerto, capacitor o los configurados
+      const isAllowed =
+        allowedOrigins.includes(requestOrigin) ||
+        /^http:\/\/localhost:\d+$/.test(requestOrigin) ||
+        /^http:\/\/127\.0\.0\.1:\d+$/.test(requestOrigin) ||
+        requestOrigin.startsWith('capacitor://');
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+      return callback(
+        new Error(`Origen no permitido por CORS: ${requestOrigin}`),
+        false,
+      );
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
