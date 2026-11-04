@@ -10,6 +10,8 @@ import { TenantGuard } from './common/guards/tenant.guard';
 import { validateEnvironment } from './context/config/app.config';
 import { PrismaModule } from './context/database/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ClientsModule } from './modules/clients/clients.module';
+import { LoansModule } from './modules/loans/loans.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 
 @Module({
@@ -22,6 +24,8 @@ import { TenantsModule } from './modules/tenants/tenants.module';
     PrismaModule,
     AuthModule,
     TenantsModule,
+    ClientsModule,
+    LoansModule,
   ],
   controllers: [AppController],
   providers: [
