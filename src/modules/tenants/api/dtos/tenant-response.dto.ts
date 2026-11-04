@@ -33,6 +33,9 @@ export class TenantResponseDto {
   @ApiProperty({ example: 15 })
   maxCobradores: number;
 
+  @ApiProperty({ example: 15, description: 'Tasa de interes por defecto (%)' })
+  tasaInteresDefecto: number;
+
   static fromDomain(tenant: Tenant): TenantResponseDto {
     return Object.assign(new TenantResponseDto(), tenant);
   }
